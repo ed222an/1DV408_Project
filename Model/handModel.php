@@ -2,11 +2,16 @@
 
 class HandModel
 {
+	private $isPlayer;
 	private $handType;
 	private $strengths;
 	private $weaknesses;
+	private $wins;
+	private $losses;
 	
 	// String dependencies.
+	private $winsSessionString = "wins";
+	private $lossesSessionString = "losses";
 	private $rock = "rock";
 	private $paper = "paper";
 	private $scissors = "scissors";
@@ -18,65 +23,50 @@ class HandModel
 		// Checks if the hand created is a playerhand.
 		if($chosenHand != NULL && $isPlayer === TRUE)
 		{
+			// The object is a player.
+			$this->isPlayer = TRUE;
+			
 			// Sets the attributes for the players hand.
 			$this->setAttributes($chosenHand);
+			
+			// Creates a score variable in the session if the new object is a player.
+			if($this->winsSessionExists() === FALSE)
+			{
+				$_SESSION[$this->winsSessionString] = 0;
+			}
+			
+			if($this->lossesSessionExists() === FALSE)
+			{
+				$_SESSION[$this->lossesSessionString] = 0;
+			}
+			
+			// Adds the session score-values to the player's win / score variables.
+			$this->wins = $_SESSION[$this->winsSessionString];
+			$this->losses = $_SESSION[$this->lossesSessionString];
 		}
 		
 		// Checks if the hand created is a computerhand.
 		if($chosenHand == NULL && $isPlayer === FALSE)
 		{
+			// The object is a computer.
+			$this->isPlayer = FALSE;
+			
 			// Creates a hand for the computer.
 			$computerHand = $this->generateComputerHand();
 			$this->setAttributes($computerHand);
 		}
 	}
 	
-	// Sets the handtype, strenghts & weaknesses.
-	private function setAttributes($chosenHand)
+	// Checks if the wins-Sessionvariable exists.
+	private function winsSessionExists()
 	{
-		if($chosenHand == NULL || $chosenHand == '')
-		{
-			throw new Exception("An error occured while creating a new hand object");
-		}
-		
-		switch($chosenHand)
-		{
-			// Create rock.
-			case $this->rock:
-				$this->handType = $this->rock;
-				$this->strengths = array($this->lizard, $this->scissors);
-				$this->weaknesses = array($this->paper, $this->spock);
-				break;
-			
-			// Create paper.	
-			case $this->paper:
-				$this->handType = $this->paper;
-				$this->strengths = array($this->rock, $this->spock);
-				$this->weaknesses = array($this->scissors, $this->lizard);
-				break;
-			
-			// Create scissors.	
-			case $this->scissors:
-				$this->handType = $this->scissors;
-				$this->strengths = array($this->paper, $this->lizard);
-				$this->weaknesses = array($this->rock, $this->spock);
-				break;
-			
-			// Create lizard.
-			case $this->lizard:
-				$this->handType = $this->lizard;
-				$this->strengths = array($this->spock, $this->paper);
-				$this->weaknesses = array($this->rock, $this->scissors);
-				break;
-			
-			// Create spock.
-			case $this->spock:
-				$this->handType = $this->spock;
-				$this->strengths = array($this->scissors, $this->rock);
-				$this->weaknesses = array($this->lizard, $this->paper);
-				break;
-		}
+		return isset($_SESSION[$this->winsSessionString]);
+	}
 	
+	// Checks if the losses-Sessionvariable exists.
+	private function lossesSessionExists()
+	{
+		return isset($_SESSION[$this->lossesSessionString]);
 	}
 	
 	// Gets the handtype of the object.
@@ -118,45 +108,175 @@ class HandModel
 		}
 	}
 	
-	// Generates a random hand for the computer.
-	public function generateComputerHand()
+	// Gets the total amount of wins.
+	public function getWins()
 	{
-		$computerHand = "";
-		
-		// Creates an array of the different handtypes.
-		$handTypes = array($this->rock, $this->paper, $this->scissors, $this->lizard, $this->spock);
-		$randomType = array_rand($handTypes);
-		
-		// Assigns the random type to the computer hand.
-		$computerHand = $handTypes[$randomType];
-		
-		return $computerHand;
-	}
-	
-	// Compares the strenghts and weaknesses between two hands.
-	public function compareHands(HandModel $firstHand, HandModel $secondHand)
-	{
-		if($firstHand == NULL || $secondHand == NULL)
+		if(isset($this->wins))
 		{
-			throw new Exception("An error occured while trying to compare hands!");
-		}
-				
-		// If the secondHand's type is a firstHand strength...
-		if(in_array($secondHand->getHandType(), $firstHand->getStrengths()))
-		{
-			// ...first hand won.
-			return TRUE;
-		}
-		// If the secondHand's type is a firstHand weakness...
-		else if(in_array($secondHand->getHandType(), $firstHand->getWeaknesses()))
-		{
-			// ...first hand lost.
-			return FALSE;
+			return $this->wins;
 		}
 		else
 		{
-			// It's a draw!
-			return NULL;
+			throw new Exception("Error while trying to get the wins.");
+		}
+	}
+	
+	// Gets the total amount of losses.
+	public function getLosses()
+	{
+		if(isset($this->losses))
+		{
+			return $this->losses;
+		}
+		else
+		{
+			throw new Exception("Error while trying to get the losses.");
+		}
+	}
+	
+	// Sets the handtype, strenghts & weaknesses.
+	private function setAttributes($chosenHand)
+	{
+		try
+		{
+			if($chosenHand == NULL || $chosenHand == '')
+			{
+				throw new Exception("An error occured while creating a new hand object.");
+			}
+			
+			switch($chosenHand)
+			{
+				// Create rock.
+				case $this->rock:
+					$this->handType = $this->rock;
+					$this->strengths = array($this->lizard, $this->scissors);
+					$this->weaknesses = array($this->paper, $this->spock);
+					break;
+				
+				// Create paper.	
+				case $this->paper:
+					$this->handType = $this->paper;
+					$this->strengths = array($this->rock, $this->spock);
+					$this->weaknesses = array($this->scissors, $this->lizard);
+					break;
+				
+				// Create scissors.	
+				case $this->scissors:
+					$this->handType = $this->scissors;
+					$this->strengths = array($this->paper, $this->lizard);
+					$this->weaknesses = array($this->rock, $this->spock);
+					break;
+				
+				// Create lizard.
+				case $this->lizard:
+					$this->handType = $this->lizard;
+					$this->strengths = array($this->spock, $this->paper);
+					$this->weaknesses = array($this->rock, $this->scissors);
+					break;
+				
+				// Create spock.
+				case $this->spock:
+					$this->handType = $this->spock;
+					$this->strengths = array($this->scissors, $this->rock);
+					$this->weaknesses = array($this->lizard, $this->paper);
+					break;
+			}
+		}
+		catch(Exception $e)
+		{
+			throw new Exception("An error occured while trying to set the hand attributes.");
+		}
+	}
+	
+	// Updates the score.
+	private function updateScore($win)
+	{
+		try
+		{
+			if($win === TRUE)
+			{
+				// Increments the wins-session variable.
+				$_SESSION[$this->winsSessionString]++;
+				$this->wins = $_SESSION[$this->winsSessionString];
+			}
+			elseif($win === FALSE)
+			{
+				// Increments the losses-session variable.
+				$_SESSION[$this->lossesSessionString]++;
+				$this->losses = $_SESSION[$this->lossesSessionString];
+			}
+		}
+		catch(Exception $e)
+		{
+			throw new Exception("Something went wrong while trying to update the score.");
+		}
+	}
+	
+	// Generates a random hand for the computer.
+	public function generateComputerHand()
+	{
+		try
+		{
+			$computerHand = "";
+			
+			// Creates an array of the different handtypes.
+			$handTypes = array($this->rock, $this->paper, $this->scissors, $this->lizard, $this->spock);
+			$randomType = array_rand($handTypes);
+			
+			// Assigns the random type to the computer hand.
+			$computerHand = $handTypes[$randomType];
+			
+			return $computerHand;
+		}
+		catch(Exception $e)
+		{
+			throw new Exception("Something went wrong while trying to generate the computer's hand.");
+		}
+	}
+	
+	// Compares the strenghts and weaknesses between two hands.
+	public function compareHands(HandModel $otherHand)
+	{
+		try
+		{
+			if($otherHand == NULL)
+			{
+				throw new Exception("An error occured while trying to compare hands.");
+			}
+					
+			// If the secondHand's type is this objects strength...
+			if(in_array($otherHand->getHandType(), $this->getStrengths()))
+			{
+				// Check if object is a player.
+				if($this->isPlayer === TRUE)
+				{
+					$this->updateScore(TRUE);
+				}
+				
+				// ...this object won.
+				return 1;
+			}
+			// If the secondHand's type is this objects weakness...
+			else if(in_array($otherHand->getHandType(), $this->getWeaknesses()))
+			{
+				// Check if object is a player.
+				if($this->isPlayer === TRUE)
+				{
+					$this->updateScore(FALSE);
+				}
+				
+				// ...this object lost.
+				return 2;
+			}
+			else
+			{
+				// It's a draw!
+				return 3;
+			}
+		}
+		catch(Exception $e)
+		{
+			throw new Exception("Something went wrong while trying to compare the hands.");
 		}
 	}
 }

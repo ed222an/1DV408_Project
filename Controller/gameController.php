@@ -23,29 +23,32 @@ class GameController
 		// If user chose a hand...
 		if($this->gameView->userChoseHand())
 		{
-			// Get the name of that hand and creates a playerHand object.
-			$chosenHand = $this->gameView->getChosenHand();
-			$playerHand = new HandModel($chosenHand);
-			
-			// Creates a randomly generated hand for the computer.
-			$computerHand = new HandModel(NULL, FALSE);
-			
-			// Compares the hands and saves the outcome.
-			$outcome = $playerHand->compareHands($playerHand, $computerHand);
-			
-			switch($outcome)
+			try
 			{
-				case TRUE:
-					// Present player as winner.
-					break;
-					
-				case FALSE:
-					// Present player as looser.
-					break;
-					
-				case NULL:
-					// Present draw.
-					break;
+				// Get the name of that hand and creates a playerHand object.
+				$chosenHand = $this->gameView->getChosenHand();
+				$playerHand = new HandModel($chosenHand);
+				
+				// Creates a randomly generated hand for the computer.
+				$computerHand = new HandModel(NULL, FALSE);
+				
+				// Compares the hands and saves the outcome.
+				// Will be 1 if player won, 2 if player lost or 3 if its a draw.
+				$outcome = $playerHand->compareHands($computerHand);
+				
+				// Get the result HTML.
+				$resultHTML = $this->gameView->getResultHTML($outcome, $playerHand->getHandType(), $computerHand->getHandType());
+				
+				// Adds the players current score to the resultHTML.
+				$resultHTML .= $this->gameView->getPlayerScoreHTML($playerHand);
+				
+				// Show the resultpage.
+				return $this->gameView->showContents($resultHTML);
+			}
+			catch(Exception $e)
+			{
+				$this->gameView->addMessage($e->getMessage());
+				return $this->gameView->showContents();
 			}
 		}
 		
