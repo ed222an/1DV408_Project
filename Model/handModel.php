@@ -1,5 +1,7 @@
 <?php
 
+require_once("model/handTypes.php");
+
 class HandModel
 {
 	private $isPlayer;
@@ -8,15 +10,15 @@ class HandModel
 	private $weaknesses;
 	private $wins;
 	private $losses;
+	private $rock = HandTypes::rock;
+	private $paper = HandTypes::paper;
+	private $scissors = HandTypes::scissors;
+	private $lizard = HandTypes::lizard;
+	private $spock = HandTypes::spock;
 	
 	// String dependencies.
 	private $winsSessionString = "wins";
 	private $lossesSessionString = "losses";
-	private $rock = "rock";
-	private $paper = "paper";
-	private $scissors = "scissors";
-	private $lizard = "lizard";
-	private $spock = "spock";
 	
 	public function __construct($chosenHand = NULL, $isPlayer = TRUE)
 	{

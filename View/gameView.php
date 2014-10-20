@@ -1,22 +1,24 @@
 <?php
 
 require_once("./model/handModel.php");
+require_once("./model/handTypes.php");
 
 class GameView
 {
 	private $handImages = array();
 	private $messages = array();
 	private $gameType = "";
+	private $rock = HandTypes::rock;
+	private $paper = HandTypes::paper;
+	private $scissors = HandTypes::scissors;
+	private $lizard = HandTypes::lizard;
+	private $spock = HandTypes::spock;
 	
 	// String dependencies.
 	private $multiplayerGame = "multiplayerGame";
+	private $playerName = "playerName";
 	private $imageDirectory = "./Images/";
 	private $imageFileType = ".png";
-	private $rock = "rock";
-	private $paper = "paper";
-	private $scissors = "scissors";
-	private $lizard = "lizard";
-	private $spock = "spock";
 	private $postSuffixX = "_x";
 	private $postSuffixY = "_y";
 	
@@ -24,15 +26,6 @@ class GameView
 	{
 		$this->gameType = $gameType;
 		$this->handImages = array($this->rock, $this->paper, $this->scissors, $this->lizard, $this->spock);
-	}
-	
-	// Checks the gametype.
-	private function isMultiplayerGame()
-	{
-		if($this->gameType == $this->multiplayerGame)
-		{
-			return TRUE;
-		}
 	}
 	
 	public function userChoseHand()
@@ -43,6 +36,15 @@ class GameView
 			{
 				return TRUE;
 			}
+		}
+	}
+	
+	// Gets the players selected name.
+	public function getPlayername()
+	{
+		if(isset($_POST[$this->playerName]))
+		{
+			return $_POST[$this->playerName];
 		}
 	}
 	
@@ -73,11 +75,26 @@ class GameView
 		}
 	}
 	
+	// Checks the gametype.
+	private function isMultiplayerGame()
+	{
+		if($this->gameType == $this->multiplayerGame)
+		{
+			return TRUE;
+		}
+	}
+	
 	// Shows the computergame page.
 	public function showGame($newContents = NULL)
 	{
 		$gameHTML = "<h1>Rock, Paper, Scissors, Lizard, Spock!</h1>
 				<h2>A PHP-game by Emil Dannberger</h2>";
+		
+		// Prints out eventual messages.		
+		foreach($this->messages as $message)
+		{
+			$gameHTML .= "<p>$message</p>";
+		}
 		
 		// Adds new contents if there are any.
 		if($newContents != NULL)
@@ -92,7 +109,7 @@ class GameView
 			// Different output for multiplayer game.				
 			if($this->isMultiplayerGame())
 			{
-				$gameHTML .= "<h3><label for='playername'>Choose your player name: </label></h3><input type='text' name='playerName' value=''/>";
+				$gameHTML .= "<h3><label for='$this->playerName'>Choose your player name: </label></h3><input type='text' name='$this->playerName' value=''/>";
 			}
 			
 			foreach($this->handImages as $hand)

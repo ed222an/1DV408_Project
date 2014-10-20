@@ -1,6 +1,7 @@
 <?php
 	
 require_once("./view/gameView.php");
+require_once("./model/urlList.php");
 require_once("./model/handModel.php");
 
 // TODO: FIX SO THAT WHEN USER CHOSES HAND, GENERATE UNIQUE URL TO SEND TO OPPONENT.
@@ -8,10 +9,12 @@ require_once("./model/handModel.php");
 class MultiplayerGameController
 {
 	private $gameView;
+	private $urlList;
 	
 	public function __construct($gameType)
 	{
 		$this->gameView = new GameView($gameType);
+		$this->urlList = new URLList();
 	}
 	
 	public function doMultiplayerGameControl()
@@ -25,21 +28,24 @@ class MultiplayerGameController
 				$chosenHand = $this->gameView->getChosenHand();
 				$playerHand = new HandModel($chosenHand);
 				
-				// Creates a randomly generated hand for the computer.
-				$computerHand = new HandModel(NULL, FALSE);
+				// Get the players selected username.
+				$playername = $this->gameView->getPlayername();
 				
-				// Compares the hands and saves the outcome.
-				// Will be 1 if player won, 2 if player lost or 3 if its a draw.
-				$outcome = $playerHand->compareHands($computerHand);
+				// Generate a new URL for the player to send to his/her opponent.
+				$uniqueURL = $this->urlList->generateUniqueURL($playername, $chosenHand);
 				
-				// Get the result HTML.
-				$resultHTML = $this->gameView->getResult($outcome, $playerHand->getHandType(), $computerHand->getHandType());
+				// Save the URL to textfile.
+				$this->urlList->saveURLToFile($uniqueURL);
 				
-				// Adds the players current score to the resultHTML.
-				$resultHTML .= $this->gameView->getPlayerScore($playerHand);
+				// Present the URL to the player.
+				return $this->gameView->showGame($uniqueURL);
 				
-				// Show the resultpage.
-				return $this->gameView->showGame($resultHTML);
+				// Other player does his shit...
+				
+				// Compare results.
+				
+				
+				// Show outcome.
 			}
 			catch(Exception $e)
 			{
