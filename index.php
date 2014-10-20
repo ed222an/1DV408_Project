@@ -9,10 +9,18 @@
 	setlocale(LC_ALL , "swedish");
 	
 	require_once("common/HTMLView.php");
-	require_once("controller/gameController.php");
+	require_once("controller/masterController.php");
+	//require_once("controller/gameController.php");
+	//require_once("controller/multiplayerController.php");
 	
+	$mc = new MasterController();
+	$htmlBody = $mc->navigate();
+	
+	/*
 	$gc = new GameController();
 	$htmlBody = $gc->doGameControl();
+	 * 
+	 */
 	
 	$view = new HTMLView();
 	$view->echoHTML($htmlBody);

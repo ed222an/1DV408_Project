@@ -6,13 +6,12 @@ class GameView
 {
 	private $handImages = array();
 	private $messages = array();
+	private $gameType = "";
 	
 	// String dependencies.
-	private $play = "play";
-	private $instructions = "instructions";
+	private $multiplayerGame = "multiplayerGame";
 	private $imageDirectory = "./Images/";
 	private $imageFileType = ".png";
-	private $instructionsImage = "rpsls";
 	private $rock = "rock";
 	private $paper = "paper";
 	private $scissors = "scissors";
@@ -21,19 +20,19 @@ class GameView
 	private $postSuffixX = "_x";
 	private $postSuffixY = "_y";
 	
-	public function __construct()
+	public function __construct($gameType)
 	{
+		$this->gameType = $gameType;
 		$this->handImages = array($this->rock, $this->paper, $this->scissors, $this->lizard, $this->spock);
 	}
 	
-	public function userClickedPlay()
+	// Checks the gametype.
+	private function isMultiplayerGame()
 	{
-		return isset($_GET[$this->play]);
-	}
-	
-	public function userClickedInstructions()
-	{
-		return isset($_GET[$this->instructions]);
+		if($this->gameType == $this->multiplayerGame)
+		{
+			return TRUE;
+		}
 	}
 	
 	public function userChoseHand()
@@ -47,88 +46,73 @@ class GameView
 		}
 	}
 	
+	// Gets the users chosen hand.
 	public function getChosenHand()
 	{
-		// Gets the chosen hand from the $_POST-array and strips it of its _x/_y suffix.
-		reset($_POST);
-		$chosenHand = key($_POST);
-		$chosenHand = str_replace($this->postSuffixX, "", $chosenHand);
-		$chosenHand = str_replace($this->postSuffixY, "", $chosenHand);
-		
-		return $chosenHand;
-	}
-	
-	public function showContents($newContents = NULL)
-	{
-		// Overrides the default menu if there are other contents to be shown.
-		if(isset($newContents) === TRUE && $newContents != "")
+		// Checks the gametype.
+		if($this->isMultiplayerGame())	
 		{
-			$contents = $newContents;
+			// Different search if the game is a multiplayer game due to the textfield.
+			foreach($this->handImages as $hand)
+			{	
+				if(array_key_exists($hand . $this->postSuffixX, $_POST) || array_key_exists($hand . $this->postSuffixY, $_POST))
+				{
+					return $hand;
+				}
+			}
 		}
 		else
 		{
-			// Default contents, shows menu.
-			$contents =	"<h3><a href=?$this->play>Play game</a></h3>
-					<h3><a href=?$this->instructions>Instructions</a></h3>";
-		}
+			// Gets the chosen hand from the $_POST-array and strips it of its _x/_y suffix.
+			reset($_POST);
+			$hand = key($_POST);
+			$hand = str_replace($this->postSuffixX, "", $hand);
+			$hand = str_replace($this->postSuffixY, "", $hand);
 			
-		// Returnstring.
-		$ret = "<h1>Rock, Paper, Scissors, Lizard, Spock!</h1>
-				<h2>A PHP-game by Emil Dannberger</h2>";
-				
-		// Iterates through the messages-array and adds the messages to the return-string.
-		foreach($this->messages as $message)
-		{
-			$ret .= '<p>' . $message . '</p>';
+			return $hand;
 		}
-		
-		$ret .= $contents;
-		
-		return $ret;
 	}
 	
-	// Gets the play HTML.
-	public function getPlayHTML()
+	// Shows the computergame page.
+	public function showGame($newContents = NULL)
 	{
-		$playHTML = "<h3>CHOOSE A HAND!</h3><table><tr>";
-				
-		foreach($this->handImages as $hand)
-		{	
-			$playHTML .= "<form METHOD='post' action=''>
-							<td><input name='$hand' type='image' src='" . $this->imageDirectory . $hand . $this->imageFileType . "' alt='Submit Form, image of the $hand hand' /></td>
-						</form>";
+		$gameHTML = "<h1>Rock, Paper, Scissors, Lizard, Spock!</h1>
+				<h2>A PHP-game by Emil Dannberger</h2>";
+		
+		// Adds new contents if there are any.
+		if($newContents != NULL)
+		{
+			$gameHTML .= $newContents;
+		}
+		else
+		{			
+			$gameHTML .= "<h3>CHOOSE A HAND!</h3><table><tr>
+							<form METHOD='post' action=''>";
+			
+			// Different output for multiplayer game.				
+			if($this->isMultiplayerGame())
+			{
+				$gameHTML .= "<h3><label for='playername'>Choose your player name: </label></h3><input type='text' name='playerName' value=''/>";
+			}
+			
+			foreach($this->handImages as $hand)
+			{	
+				$gameHTML .= "<td><input name='$hand' type='image' src='" . $this->imageDirectory . $hand . $this->imageFileType . "' alt='Submit Form, image of the $hand hand' /></td>";
+			}
 		}
 				
-		$playHTML .= "</tr></table><h3><a href=?>Return</a></h3>";
+		$gameHTML .= "</form></tr></table><h3><a href=?>Return</a></h3>";
 		
-		return $playHTML;
-	}
-	
-	// Gets the instructions HTML.
-	public function getInstructionsHTML()
-	{	
-		$instructionsHTML = "<h3>INSTRUCTIONS</h3>
-						<div><ol>
-								<li>Press the 'Play'-button to start a new game.</li>
-								<li>Choose the hand you would like to play. Each hand has its strengths and weaknesses, see image below.</li>
-								<li>Your opponent then chooses a hand to play against you, not knowing what you picked.</li>
-								<li>The battle takes place! Both hands are revealed and the result is calculated.</li>
-								<li>The winner is announced!</li>
-								<li>Play again or return to the start page.</li>
-							</ol></div>
-						<h3><a href=?>Return</a></h3>
-						<div>" . $this->generateImageTag($this->instructionsImage) . "</div>";
-		
-		return $instructionsHTML;
+		return $gameHTML;
 	}
 	
 	// Returns the players score.
-	public function getPlayerScoreHTML(HandModel $playerHand)
+	public function getPlayerScore(HandModel $playerHand)
 	{
 		return "<h3>Wins: " . $playerHand->getWins() . " Losses: " . $playerHand->getLosses() . "</h3>";
 	}
 
-	public function getResultHTML($outcome, $handType1, $handType2)
+	public function getResult($outcome, $handType1, $handType2)
 	{
 		
 		$battleText = $this->generateImageTag($handType1) . " VS. " . $this->generateImageTag($handType2) . "<br/><h2>" . $this->getBattleText($outcome, $handType1, $handType2) . "!</h2>";
@@ -151,7 +135,7 @@ class GameView
 				break;
 		}
 		
-		$ret .= "<h3><a href=?$this->play>Play again</a> <a href=?>Return</a></h3>";
+		$ret .= "<h3><a href=?$this->gameType>Play again</a></h3>";
 		
 		return $ret;
 	}
