@@ -5,6 +5,7 @@ require_once("model/handTypes.php");
 class HandModel
 {
 	private $isPlayer;
+	private $playername;
 	private $handType;
 	private $strengths;
 	private $weaknesses;
@@ -69,6 +70,30 @@ class HandModel
 	private function lossesSessionExists()
 	{
 		return isset($_SESSION[$this->lossesSessionString]);
+	}
+	
+	// Sets the playername.
+	public function setPlayerName($playername)
+	{
+		if(!preg_match('/^[A-Za-z][A-Za-z0-9]{2,31}$/', $playername))
+		{
+			throw new Exception("Chosen name is not valid. Must contain at least 3 characters, starting with a letter. Only use letters and numbers!");
+		}
+		
+		$this->playername = $playername;
+	}
+	
+	// Gets the player name.
+	public function getPlayerName()
+	{
+		if(isset($this->playername) && $this->playername != NULL && $this->playername != "")
+		{
+			return $this->playername;
+		}
+		else
+		{
+			throw new Exception("Error while trying to get playername.");
+		}
 	}
 	
 	// Gets the handtype of the object.
@@ -238,7 +263,7 @@ class HandModel
 	
 	// Compares the strenghts and weaknesses between two hands.
 	public function compareHands(HandModel $otherHand)
-	{
+	{	
 		try
 		{
 			if($otherHand == NULL)

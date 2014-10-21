@@ -16,7 +16,8 @@ class MasterController
 			{
 				case MasterView::$actionMultiplayerGame:
 					
-					$controller = new MultiplayerGameController(MasterView::$actionMultiplayerGame);
+					$actualURL = MasterView::getActualURL();
+					$controller = new MultiplayerGameController(MasterView::$actionMultiplayerGame, $actualURL);
 					$result = $controller->doMultiplayerGameControl();
 					return $result;
 					break;
@@ -24,7 +25,8 @@ class MasterController
 				case MasterView::$actionContinueMultiplayerGame:
 					
 					$isPlayerTwo = TRUE;
-					$controller = new MultiplayerGameController(MasterView::$actionContinueMultiplayerGame, $isPlayerTwo);
+					$actualURL = MasterView::getActualURL();
+					$controller = new MultiplayerGameController(MasterView::$actionContinueMultiplayerGame, $actualURL, $isPlayerTwo);
 					$result = $controller->doMultiplayerGameControl();
 					return $result;
 					break;

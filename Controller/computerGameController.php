@@ -31,7 +31,7 @@ class ComputerGameController
 				$outcome = $playerHand->compareHands($computerHand);
 				
 				// Get the result HTML.
-				$resultHTML = $this->gameView->getResult($outcome, $playerHand->getHandType(), $computerHand->getHandType());
+				$resultHTML = $this->gameView->getResult($outcome, $playerHand, $computerHand);
 				
 				// Adds the players current score to the resultHTML.
 				$resultHTML .= $this->gameView->getPlayerScore($playerHand);

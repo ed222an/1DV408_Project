@@ -1,3 +1,6 @@
-http://127.0.0.1:8080/project/?continueMultiplayerGame=dada/9ffbd079ca4cb42ca4a477ccdbfb90e1
-http://127.0.0.1:8080/project/?continueMultiplayerGame=Lalala/8e7179f81bcea658423751eaf5772930
-http://127.0.0.1:8080/project/?continueMultiplayerGame=Arkan/90208bb10fe2a1a05193e2c11d439788
+http://127.0.0.1:8080/project/?continueMultiplayerGame=Superman/cea37d098adc8b5dfd9e9fe7cac6a1c6;rock
+http://127.0.0.1:8080/project/?continueMultiplayerGame=Hasse/8668e761bd7d00226cb1ba3e8b2c604d;paper
+http://127.0.0.1:8080/project/?continueMultiplayerGame=Hadde/1dff269d5ebadd8874984ca042b3697a;rock
+http://127.0.0.1:8080/project/?continueMultiplayerGame=Emilsan/d1513c67fe85431742f773dca6846f85;paper
+http://127.0.0.1:8080/project/?continueMultiplayerGame=Gagge/d8c9dd4be0a8e48d7726c2d16e4e91ae;rock
+http://127.0.0.1:8080/project/?continueMultiplayerGame=Dalle/4245d3a00bdb8f0075043ce56b6644e1;scissors

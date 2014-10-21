@@ -19,11 +19,11 @@ class MasterView
 		
 		if(isset($_GET[self::$actionContinueMultiplayerGame]))
 		{
-			$dataList = new DataList();
+			$actualURL = self::getActualURL();
+			$dataList = new DataList($actualURL);
 			
-			if($dataList->dataExists("http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"))
+			if($dataList->dataExists($actualURL))
 			{
-				var_dump("DATA EXISTS");
 				return self::$actionContinueMultiplayerGame;
 			}
 		}
@@ -34,6 +34,11 @@ class MasterView
 		}
 		
 		return self::$actionMain;
+	}
+	
+	public static function getActualURL()
+	{
+		return "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 	}
 }
 

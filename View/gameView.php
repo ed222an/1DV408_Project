@@ -53,7 +53,7 @@ class GameView
 	public function getChosenHand()
 	{
 		// Checks the gametype.
-		if($this->isMultiplayerGame())	
+		if($this->isGameType($this->multiplayerGame) || $this->isGameType($this->continueMultiplayerGame))	
 		{
 			// Different search if the game is a multiplayer game due to the textfield.
 			foreach($this->handImages as $hand)
@@ -77,17 +77,9 @@ class GameView
 	}
 	
 	// Checks the gametype.
-	private function isMultiplayerGame()
+	private function isGameType($gameType)
 	{
-		if($this->gameType == $this->multiplayerGame)
-		{
-			return TRUE;
-		}
-	}
-	
-	private function isContinueMultiplayerGame()
-	{
-		if($this->gameType == $this->continueMultiplayerGame)
+		if($this->gameType == $gameType)
 		{
 			return TRUE;
 		}
@@ -116,11 +108,11 @@ class GameView
 							<form METHOD='post' action=''>";
 			
 			// Different output for multiplayer game.				
-			if($this->isMultiplayerGame())
+			if($this->isGameType($this->multiplayerGame))
 			{
 				$gameHTML .= "<h3><label for='$this->playerName'>Choose your player name: </label></h3><input type='text' name='$this->playerName' value=''/>";
 			}
-			elseif($this->isContinueMultiplayerGame())
+			elseif($this->isGameType($this->continueMultiplayerGame))
 			{
 				$gameHTML .= "<h3>Your opponent has chosen! Now it's your time!</h3>
 				<h3><label for='$this->playerName'>Choose your player name: </label></h3><input type='text' name='$this->playerName' value=''/>";
@@ -151,8 +143,18 @@ class GameView
 		return "<h3>Wins: " . $playerHand->getWins() . " Losses: " . $playerHand->getLosses() . "</h3>";
 	}
 
-	public function getResult($outcome, $handType1, $handType2)
+	public function getResult($outcome, HandModel $hand1, HandModel $hand2)
 	{
+		$handType1 = $hand1->getHandType();
+		$handType2 = $hand2->getHandType();
+		$playername = "Player";
+		$otherPlayername = "Computer";
+		
+		if($this->gameType == "continueMultiplayerGame")
+		{
+			$playername = $hand1->getPlayerName();
+			$otherPlayername = $hand2->getPlayerName();
+		}
 		
 		$battleText = $this->generateImageTag($handType1) . " VS. " . $this->generateImageTag($handType2) . "<br/><h2>" . $this->getBattleText($outcome, $handType1, $handType2) . "!</h2>";
 		
@@ -160,12 +162,12 @@ class GameView
 		{		
 			case 1:
 				// Present player as winner.
-				$ret = "<h2>Player won!</h2>$battleText";
+				$ret = "<h2>$playername won vs. $otherPlayername!</h2>$battleText";
 				break;
 				
 			case 2:
 				// Present player as looser.
-				$ret = "<h2>Player lost!</h2>$battleText";
+				$ret = "<h2>$playername lost vs. $otherPlayername!</h2>$battleText";
 				break;
 				
 			case 3:

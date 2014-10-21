@@ -5,24 +5,40 @@ require_once("./model/handTypes.php");
 class DataList
 {
 	private $textFileName = "dataList.txt";
+	private $actualURL;
 	private $handTypes = array();
 	
-	public function __construct()
+	public function __construct($actualURL)
 	{
+		$this->actualURL = $actualURL;
 		$this->handTypes = array(HandTypes::rock, HandTypes::paper, HandTypes::scissors, HandTypes::lizard, HandTypes::spock);
+	}
+	
+	public function getNameFromURL()
+	{
+		$urlArray = explode("=", $this->actualURL);
+		$urlArray = explode("/", $urlArray[1]);
+		$playername = $urlArray[0];
+		
+		return $playername;
 	}
 	
 	// Generates a unique url.
 	public function generateUniqueURL($playername)
 	{
-		$actualURL = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]=";
+		$modifiedURL = $this->actualURL . "=";
 		
-		// FIXA STRÄNGBEROENDE.	
-		$uniqueURL = str_replace("multiplayerGame", "continueMultiplayerGame", $actualURL);
+		$uniqueURL = str_replace("multiplayerGame", "continueMultiplayerGame", $modifiedURL);
 		
 		$uniqueURL .= $playername . "/" . md5(uniqid(rand(), true));
 		
 		return $uniqueURL;
+	}
+	
+	// Appends a string to the existing data.
+	public function appendToData($data, $stringToAppend)
+	{
+		return $data . ";" . $stringToAppend;
 	}
 	
 	// Validates the player's input.
@@ -35,7 +51,7 @@ class DataList
 	}
 	
 	// Returns true if the url exists in the file.
-	public function dataExists($dataToCheck)
+	public function dataExists($dataToCheck, $getHandType = FALSE)
 	{
 		// Controls if the file exists.
 		if($this->checkForFile($this->textFileName))
@@ -46,9 +62,18 @@ class DataList
 			
 			foreach($result as $data)
 			{
-				// Checks if the data in the file is equal to the dataToCheck-parameter.
-				if($data == $dataToCheck)
+				// Sparate URL from handtype.
+				$urlAndHandType = explode(";", $data);
+				
+				// Checks for correct URL.
+				if($urlAndHandType[0] == $dataToCheck)
 				{
+					// Gets the handtype.
+					if($getHandType === TRUE)
+					{
+						return $urlAndHandType[1];
+					}
+					
 					return TRUE;
 				}
 			}
