@@ -20,6 +20,14 @@ class MasterController
 					$result = $controller->doMultiplayerGameControl();
 					return $result;
 					break;
+					
+				case MasterView::$actionContinueMultiplayerGame:
+					
+					$isPlayerTwo = TRUE;
+					$controller = new MultiplayerGameController(MasterView::$actionContinueMultiplayerGame, $isPlayerTwo);
+					$result = $controller->doMultiplayerGameControl();
+					return $result;
+					break;
 				
 				case MasterView::$actionComputerGame:
 					

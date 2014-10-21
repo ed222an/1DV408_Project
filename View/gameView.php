@@ -16,6 +16,7 @@ class GameView
 	
 	// String dependencies.
 	private $multiplayerGame = "multiplayerGame";
+	private $continueMultiplayerGame = "continueMultiplayerGame";
 	private $playerName = "playerName";
 	private $imageDirectory = "./Images/";
 	private $imageFileType = ".png";
@@ -84,6 +85,14 @@ class GameView
 		}
 	}
 	
+	private function isContinueMultiplayerGame()
+	{
+		if($this->gameType == $this->continueMultiplayerGame)
+		{
+			return TRUE;
+		}
+	}
+	
 	// Shows the computergame page.
 	public function showGame($newContents = NULL)
 	{
@@ -111,6 +120,11 @@ class GameView
 			{
 				$gameHTML .= "<h3><label for='$this->playerName'>Choose your player name: </label></h3><input type='text' name='$this->playerName' value=''/>";
 			}
+			elseif($this->isContinueMultiplayerGame())
+			{
+				$gameHTML .= "<h3>Your opponent has chosen! Now it's your time!</h3>
+				<h3><label for='$this->playerName'>Choose your player name: </label></h3><input type='text' name='$this->playerName' value=''/>";
+			}
 			
 			foreach($this->handImages as $hand)
 			{	
@@ -121,6 +135,14 @@ class GameView
 		$gameHTML .= "</form></tr></table><h3><a href=?>Return</a></h3>";
 		
 		return $gameHTML;
+	}
+	
+	// Returns the HTML for multiplayer URL.
+	public function getURLHTML($uniqueURL)
+	{
+		return "<h3>Send this URL to your opponent:</h3>
+				<h4>$uniqueURL</h4>
+				<h3>Reload the page once you know he/she made her selections!</h3>";
 	}
 	
 	// Returns the players score.

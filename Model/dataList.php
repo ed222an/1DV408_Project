@@ -2,9 +2,9 @@
 
 require_once("./model/handTypes.php");
 
-class URLList
+class DataList
 {
-	private $textFileName = "uniqueURLList.txt";
+	private $textFileName = "dataList.txt";
 	private $handTypes = array();
 	
 	public function __construct()
@@ -13,18 +13,20 @@ class URLList
 	}
 	
 	// Generates a unique url.
-	public function generateUniqueURL($playername, $handType)
+	public function generateUniqueURL($playername)
 	{
-		$this->validatePlayername($playername);
-		$this->validateHandType($handType);
+		$actualURL = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]=";
 		
-		$uniqueURL = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]/" . $playername . "/" . $handType . "/" . md5(uniqid(rand(), true));
+		// FIXA STRÄNGBEROENDE.	
+		$uniqueURL = str_replace("multiplayerGame", "continueMultiplayerGame", $actualURL);
+		
+		$uniqueURL .= $playername . "/" . md5(uniqid(rand(), true));
 		
 		return $uniqueURL;
 	}
 	
-	// Validates the player's name.
-	private function validatePlayername($playername)
+	// Validates the player's input.
+	public function validatePlayerInput($playername)
 	{
 		if(!preg_match('/^[A-Za-z][A-Za-z0-9]{2,31}$/', $playername))
 		{
@@ -32,17 +34,8 @@ class URLList
 		}
 	}
 	
-	// Validates the player's handtype.
-	private function validateHandType($handType)
-	{
-		if(!in_array($handType, $this->handTypes))
-		{
-			throw new Exception("Handtype not valid.");
-		}
-	}
-	
 	// Returns true if the url exists in the file.
-	public function urlExists($urlToCheck)
+	public function dataExists($dataToCheck)
 	{
 		// Controls if the file exists.
 		if($this->checkForFile($this->textFileName))
@@ -51,10 +44,10 @@ class URLList
 			$file = file_get_contents($this->textFileName);
 			$result = explode(PHP_EOL, $file);
 			
-			foreach($result as $url)
+			foreach($result as $data)
 			{
-				// Checks if the url in the file is equal to the url-parameter.
-				if($url == $urlToCheck)
+				// Checks if the data in the file is equal to the dataToCheck-parameter.
+				if($data == $dataToCheck)
 				{
 					return TRUE;
 				}
@@ -76,9 +69,9 @@ class URLList
 	}
 	
 	// Saves the new url to a file.
-	public function saveURLToFile($uniqueURL)
+	public function saveDataToFile($data)
 	{
-		$stringToSave = $uniqueURL . PHP_EOL;
+		$stringToSave = $data . PHP_EOL;
 
 		// If the file doesn't exists, create it and fill it with the new contents.
 		if($this->checkForFile($this->textFileName) === FALSE)
