@@ -88,8 +88,7 @@ class GameView
 	// Shows the computergame page.
 	public function showGame($newContents = NULL)
 	{
-		$gameHTML = "<h1>Rock, Paper, Scissors, Lizard, Spock!</h1>
-				<h2>A PHP-game by Emil Dannberger</h2>";
+		$gameHTML = $this->getHeaderHTML();
 		
 		// Prints out eventual messages.		
 		foreach($this->messages as $message)
@@ -124,9 +123,27 @@ class GameView
 			}
 		}
 				
-		$gameHTML .= "</form></tr></table><h3><a href=?>Return</a></h3>";
+		$gameHTML .= $this->getFooterHTML();
 		
 		return $gameHTML;
+	}
+
+	// Shows the unresolved page.
+	public function showUnresolved()
+	{	
+		return $this->getHeaderHTML() . "<h3>You still have an unresolved game, try reloading the page when your opponent has chosen both name and hand.</h3>
+										<h4>If your opponent isn't responding, restart your browser to enable another challenge.</h4>" . $this->getFooterHTML();	
+	}
+	
+	// Gets the page header.
+	private function getHeaderHTML()
+	{
+		return "<h1>Rock, Paper, Scissors, Lizard, Spock!</h1><h2>A PHP-game by Emil Dannberger</h2>";
+	}
+	
+	private function getFooterHTML()
+	{
+		return "</form></tr></table><h3><a href=?>Return</a></h3>";
 	}
 	
 	// Returns the HTML for multiplayer URL.
@@ -150,7 +167,7 @@ class GameView
 		$playername = "Player";
 		$otherPlayername = "Computer";
 		
-		if($this->gameType == "continueMultiplayerGame")
+		if($this->gameType == $this->continueMultiplayerGame || $this->gameType == $this->multiplayerGame)
 		{
 			$playername = $hand1->getPlayerName();
 			$otherPlayername = $hand2->getPlayerName();

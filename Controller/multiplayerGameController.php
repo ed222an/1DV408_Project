@@ -4,8 +4,6 @@ require_once("./view/gameView.php");
 require_once("./model/dataList.php");
 require_once("./model/handModel.php");
 
-// TODO: FIX SO THAT PLAYER 1 CAN SEE THE RESULTS.
-
 class MultiplayerGameController
 {
 	private $gameView;
@@ -14,10 +12,14 @@ class MultiplayerGameController
 	private $isPlayerTwo;
 	private $actualURL;
 	
+	// String dependencies.
+	private $unresolved = "unresolved";
+	private $resolved = "resolved";
+	
 	public function __construct($gameType, $actualURL, $isPlayerTwo = FALSE)
 	{
 		$this->gameView = new GameView($gameType);
-		$this->dataList = new DataList($actualURL);
+		$this->dataList = new DataList($actualURL, $gameType);
 		$this->actualURL = $actualURL;
 		
 		if($isPlayerTwo === TRUE)
@@ -33,7 +35,57 @@ class MultiplayerGameController
 	}
 	
 	public function doMultiplayerGameControl()
-	{	
+	{
+		// Check if the user has a game currently unresolved.
+		if($this->dataList->sessionExists())
+		{
+			// Gets the playername from the session.
+			$playername = $this->dataList->getSessionPlayername();
+			
+			// Gets the status of the existing game from the gamefile.
+			$statusFromFile = $this->dataList->dataExists($playername, $getHandType = FALSE, $getPlayernameAndStatus = TRUE);
+			
+			// Shows the Unresolved-page.
+			if($statusFromFile == $this->unresolved)
+			{
+				return $this->gameView->showUnresolved();
+			}
+			
+			// Shows the resolved-page.
+			if($statusFromFile == $this->resolved)
+			{
+				// Gets an array from the file, containing the first & second players hands & second players name.
+				$components = $this->dataList->manageComponentsFromFile($playername);
+				
+				// Creates new objects from the components.
+				$playerOneHand = new HandModel($components[0]);
+				$playerTwoHand = new HandModel($components[1]);
+				
+				// Sets the playername for the new objects.
+				$playerOneHand->setPlayerName($playername);
+				$playerTwoHand->setPlayerName($components[2]);
+				
+				// Compares the hands and saves the outcome.
+				// Will be 1 if player won, 2 if player lost or 3 if its a draw.
+				$outcome = $playerOneHand->compareHands($playerTwoHand);
+				
+				// Get the result HTML.
+				$resultHTML = $this->gameView->getResult($outcome, $playerOneHand, $playerTwoHand);
+				
+				// Adds the players current score to the resultHTML.
+				$resultHTML .= $this->gameView->getPlayerScore($playerOneHand);
+				
+				// Removes the playername-session.
+				$this->dataList->removeSessionPlayername();
+				
+				// Removes the challenge from the textfile.
+				$this->dataList->manageComponentsFromFile($playername, $components[0], $components[1], $components[2]);
+				
+				// Show the resultpage.
+				return $this->gameView->showGame($resultHTML);
+			}
+		}
+			
 		// If user chose a hand...
 		if($this->gameView->userChoseHand() && $this->isPlayerOne === TRUE)
 		{
@@ -52,10 +104,17 @@ class MultiplayerGameController
 				// Generate a new URL for the player to send to his/her opponent.
 				$uniqueURL = $this->dataList->generateUniqueURL($playerOneName);
 				
+				// Add status to URL.
+				$uniqueURL = $this->dataList->addUnresolvedToURL($uniqueURL);
+				
+				// Append the handType to the data.
 				$dataToSave = $this->dataList->appendToData($uniqueURL, $playerOneHand->getHandType());
 				
 				// Save the URL to textfile.
 				$this->dataList->saveDataToFile($dataToSave);
+				
+				// Sets the session variables.
+				$this->dataList->setSessionPlayername($playerOneName);
 				
 				// Present the URL to the player.
 				return $this->gameView->showGame($this->gameView->getURLHTML($uniqueURL));
@@ -76,6 +135,7 @@ class MultiplayerGameController
 					// Get the name of that hand and creates a playerHand object.
 					$chosenHand = $this->gameView->getChosenHand();
 					$playerTwoHand = new HandModel($chosenHand);
+					$playerTwoHandType = $playerTwoHand->getHandType();
 					
 					// Get the players selected username.
 					$playerTwoName = $this->gameView->getPlayername();
@@ -85,7 +145,7 @@ class MultiplayerGameController
 					$this->dataList->validatePlayerInput($playerTwoName);
 					
 					//Gets the first player's hand from the data file.
-					$handFromFile = $this->dataList->dataExists($this->actualURL, $getHandType = TRUE);
+					$handFromFile = $this->dataList->dataExists($this->actualURL, $getHandType = TRUE, $getPlayernameAndStatus = FALSE);
 					
 					// Creates a new hand-object based on the filedata.
 					$playerOneHand = new HandModel($handFromFile);
@@ -103,6 +163,10 @@ class MultiplayerGameController
 					
 					// Adds the players current score to the resultHTML.
 					$resultHTML .= $this->gameView->getPlayerScore($playerTwoHand);
+					
+					// Changes the URL in the file to resolved, adds second player hand & name.
+					$dataFromFile = $this->dataList->dataExists($this->actualURL, $getHandType = TRUE, $getPlayernameAndStatus = FALSE, $getRowData = TRUE);
+					$this->dataList->saveDataToFile($dataFromFile, $playerTwoHandType, $playerTwoName);
 					
 					// Show the resultpage.
 					return $this->gameView->showGame($resultHTML);

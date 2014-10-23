@@ -20,7 +20,7 @@ class MasterView
 		if(isset($_GET[self::$actionContinueMultiplayerGame]))
 		{
 			$actualURL = self::getActualURL();
-			$dataList = new DataList($actualURL);
+			$dataList = new DataList($actualURL, self::$actionContinueMultiplayerGame);
 			
 			if($dataList->dataExists($actualURL))
 			{
