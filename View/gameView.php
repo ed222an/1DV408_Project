@@ -103,23 +103,23 @@ class GameView
 		}
 		else
 		{			
-			$gameHTML .= "<h3>CHOOSE A HAND!</h3><table><tr>
-							<form METHOD='post' action=''>";
+			$gameHTML .= "<h3>CHOOSE A HAND!</h3>
+							<form METHOD='post'>";
 			
 			// Different output for multiplayer game.				
 			if($this->isGameType($this->multiplayerGame))
 			{
-				$gameHTML .= "<h3><label for='$this->playerName'>Choose your player name: </label></h3><input type='text' name='$this->playerName' value=''/>";
+				$gameHTML .= "<h3>Choose your player name: </h3><input type='text' name='$this->playerName' value=''/>";
 			}
 			elseif($this->isGameType($this->continueMultiplayerGame))
 			{
 				$gameHTML .= "<h3>Your opponent has chosen! Now it's your time!</h3>
-				<h3><label for='$this->playerName'>Choose your player name: </label></h3><input type='text' name='$this->playerName' value=''/>";
+				<h3>Choose your player name: </h3><input type='text' name='$this->playerName' value=''/>";
 			}
 			
 			foreach($this->handImages as $hand)
 			{	
-				$gameHTML .= "<td><input name='$hand' type='image' src='" . $this->imageDirectory . $hand . $this->imageFileType . "' alt='Submit Form, image of the $hand hand' /></td>";
+				$gameHTML .= "<input name='$hand' type='image' src='" . $this->imageDirectory . $hand . $this->imageFileType . "' alt='Submit Form, image of the $hand hand' />";
 			}
 		}
 				
@@ -143,7 +143,7 @@ class GameView
 	
 	private function getFooterHTML()
 	{
-		return "</form></tr></table><h3><a href=?>Return</a></h3>";
+		return "</form><h3><a href=?>Return</a></h3>";
 	}
 	
 	// Returns the HTML for multiplayer URL.

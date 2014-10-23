@@ -17,6 +17,7 @@
 				<!DOCTYPE html>
 				<html>
 					<head>
+						<title>Rock, Paper, Scissors, Lizard, Spock - A PHP game by Emil Dannberger</title>
 						<meta charset='utf-8'>
 					</head>
 					<body>

@@ -33,6 +33,7 @@ class MasterController
 				
 				case MasterView::$actionComputerGame:
 					
+					$actualURL = MasterView::getActualURL();
 					$controller = new ComputerGameController(MasterView::$actionComputerGame);
 					$result = $controller->doComputerGameControl();
 					return $result;
