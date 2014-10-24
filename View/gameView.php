@@ -93,7 +93,7 @@ class GameView
 		// Prints out eventual messages.		
 		foreach($this->messages as $message)
 		{
-			$gameHTML .= "<p>$message</p>";
+			$gameHTML .= "<div id='message'><p>$message</p></div>";
 		}
 		
 		// Adds new contents if there are any.
@@ -109,12 +109,12 @@ class GameView
 			// Different output for multiplayer game.				
 			if($this->isGameType($this->multiplayerGame))
 			{
-				$gameHTML .= "<h3>Choose your player name: </h3><input type='text' name='$this->playerName' value=''/>";
+				$gameHTML .= "<div id='choosePlayername'><h3>Choose your playername:</h3></div><input class='textbox' type='text' name='$this->playerName' value=''/>";
 			}
 			elseif($this->isGameType($this->continueMultiplayerGame))
 			{
-				$gameHTML .= "<h3>Your opponent has chosen! Now it's your time!</h3>
-				<h3>Choose your player name: </h3><input type='text' name='$this->playerName' value=''/>";
+				$gameHTML .= "<div id='opponentChose'><h3>Your opponent has chosen! Now it's your time!</h3></div>
+				<div id='choosePlayername'><h3>Choose your player name: </h3></div><input class='textbox' type='text' name='$this->playerName' value=''/>";
 			}
 			
 			foreach($this->handImages as $hand)
@@ -131,8 +131,8 @@ class GameView
 	// Shows the unresolved page.
 	public function showUnresolved()
 	{	
-		return $this->getHeaderHTML() . "<h3>You still have an unresolved game, try reloading the page when your opponent has chosen both name and hand.</h3>
-										<h4>If your opponent isn't responding, restart your browser to enable another challenge.</h4>" . $this->getFooterHTML();	
+		return $this->getHeaderHTML() . "<div id='unresolvedTop'><h3>You still have an unresolved game, try reloading the page when your opponent has chosen both name and hand.</h3></div>
+										<div id='unresolvedBottom'><h4>If your opponent isn't responding, restart your browser to enable another challenge.</h4></div>" . $this->getFooterHTML();	
 	}
 	
 	// Gets the page header.
@@ -143,7 +143,7 @@ class GameView
 	
 	private function getFooterHTML()
 	{
-		return "</form><h3><a href=?>Return</a></h3>";
+		return "</form><div id='footer'><h3><a href=?>Return</a></h3></div>";
 	}
 	
 	// Returns the HTML for multiplayer URL.
@@ -173,27 +173,29 @@ class GameView
 			$otherPlayername = $hand2->getPlayerName();
 		}
 		
-		$battleText = $this->generateImageTag($handType1) . " VS. " . $this->generateImageTag($handType2) . "<br/><h2>" . $this->getBattleText($outcome, $handType1, $handType2) . "!</h2>";
+		$battleText = "<div id='battleImages'>" .$this->generateImageTag($handType1) . " VS. " . $this->generateImageTag($handType2) . "</div><br/><div id='battleText'><h2>" . $this->getBattleText($outcome, $handType1, $handType2) . "!</div></h2>";
+		
+		$ret = "<div id='outcome'>";
 		
 		switch($outcome)
 		{		
 			case 1:
 				// Present player as winner.
-				$ret = "<h2>$playername won vs. $otherPlayername!</h2>$battleText";
+				$ret .= "<h2>$playername won vs. $otherPlayername!</h2>$battleText";
 				break;
 				
 			case 2:
 				// Present player as looser.
-				$ret = "<h2>$playername lost vs. $otherPlayername!</h2>$battleText";
+				$ret .= "<h2>$playername lost vs. $otherPlayername!</h2>$battleText";
 				break;
 				
 			case 3:
 				// Present draw.
-				$ret = "<h2>Draw!</h2>$battleText";
+				$ret .= "<div id='draw'><h2>Draw!</h2></div>$battleText";
 				break;
 		}
 		
-		$ret .= "<h3><a href=?$this->gameType>Play again</a></h3>";
+		$ret .= "</div><div id='playAgain'><h3><a href=?$this->gameType>Play again</a></h3></div>";
 		
 		return $ret;
 	}

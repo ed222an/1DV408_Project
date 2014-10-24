@@ -1,0 +1,142 @@
+body
+{
+	width: 800px;
+    margin: 0 auto;
+    
+    background-color: #2E1700;
+    font-size: 15px;
+    color:white;
+	font-family: "Arial", Helvetica, sans-serif;
+}
+
+h1
+{
+	margin-left: auto;
+    margin-right: auto;
+    width: 70%;
+}
+
+h2
+{
+	margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+}
+
+h3
+{
+	margin-left: auto;
+    margin-right: auto;
+    width: 25%;
+}
+
+input:focus
+{
+	background-color: yellow;
+}
+
+a:link
+{
+	color: purple;
+}
+ 
+a:hover
+{
+	color: red;
+}
+
+a:active
+{
+	color: lightgreen;
+}
+
+a:focus
+{
+	color:yellow;
+}
+
+form
+{
+	padding-left:12%;
+}
+
+.textbox
+{
+	display:block;
+	margin-left:30%;
+	margin-bottom:1%;
+}
+
+#draw
+{
+	margin-left:17%;
+}
+
+#opponentChose
+{
+	margin-left:-41%;
+	margin-right:-20%;
+	text-align:center;
+}
+
+#unresolvedTop
+{
+	margin-left:-100%;
+	margin-right:-98%;
+	padding-left:-100px;
+	text-align:center;
+	border: 20px solid darkred;
+    box-shadow: 10px 10px 10px black;
+    background-color:#855C33;
+}
+
+#unresolvedBottom
+{
+	margin-left:12%;
+}
+
+#message
+{
+	width: 300px;
+	padding:10px;
+    border: 20px solid darkred;
+    margin-left:25%;
+    box-shadow: 10px 10px 10px black;
+    background-color:#855C33;
+    font-weight:bold;
+    color:black;
+    text-align:center;
+}
+
+#choosePlayername
+{
+	margin-left:-32%;
+    width: 150%;
+}
+
+#outcome
+{
+	margin-left: auto;
+    margin-right: auto;
+    padding-left: 7%;
+    
+    color:#FFFF99;
+}
+
+#battleImages
+{
+	margin-left: 25%;
+    margin-right: 25%;
+    font-weight: bold;
+}
+
+#battleText
+{
+	font-size: 18px;
+}
+
+#footer, #playAgain
+{
+	text-align:center;
+	margin-right:7%;
+}
