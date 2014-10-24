@@ -2,9 +2,9 @@
 
 require_once("./model/handTypes.php");
 
-class DataList
+class DataHandler
 {
-	private $textFileName = "dataList.txt";
+	private $textFileName = "dataHandler.txt";
 	private $actualURL;
 	private $handTypes = array();
 	private $gameType;
@@ -30,7 +30,7 @@ class DataList
 	{
 		if(!isset($param))
 		{
-			throw new Exception("Something went wrong when trying to access the datalist.");
+			throw new Exception("Something went wrong when trying to access the datahandler.");
 		}
 	}
 	
@@ -116,7 +116,7 @@ class DataList
 	}
 	
 	// Returns true if the url exists in the file.
-	public function dataExists($dataToCheck, $getHandType = FALSE, $getPlayernameAndStatus = FALSE, $getRowData = FALSE)
+	public function handleData($dataToCheck, $getHandType = FALSE, $getPlayernameAndStatus = FALSE, $getRowData = FALSE)
 	{
 		// Controls if the file exists.
 		if($this->checkForFile($this->textFileName))

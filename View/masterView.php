@@ -1,6 +1,6 @@
 <?php
 
-require_once("./model/dataList.php");
+require_once("./model/dataHandler.php");
 
 class MasterView
 {
@@ -20,9 +20,9 @@ class MasterView
 		if(isset($_GET[self::$actionContinueMultiplayerGame]))
 		{
 			$actualURL = self::getActualURL();
-			$dataList = new DataList($actualURL, self::$actionContinueMultiplayerGame);
+			$dataHandler = new DataHandler($actualURL, self::$actionContinueMultiplayerGame);
 			
-			if($dataList->dataExists($actualURL))
+			if($dataHandler->handleData($actualURL))
 			{
 				return self::$actionContinueMultiplayerGame;
 			}
