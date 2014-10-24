@@ -4,7 +4,7 @@ require_once("./model/handTypes.php");
 
 class DataHandler
 {
-	private $textFileName = "dataHandler.txt";
+	private $textFileName = "dataList.txt";
 	private $actualURL;
 	private $handTypes = array();
 	private $gameType;
