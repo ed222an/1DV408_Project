@@ -25,6 +25,11 @@ class GameView
 	
 	public function __construct($gameType)
 	{
+		if(!isset($gameType))
+		{
+			throw new Exception("Gametype is NULL.");
+		}
+		
 		$this->gameType = $gameType;
 		$this->handImages = array($this->rock, $this->paper, $this->scissors, $this->lizard, $this->spock);
 	}
@@ -106,15 +111,15 @@ class GameView
 			$gameHTML .= "<h3>CHOOSE A HAND!</h3>
 							<form METHOD='post'>";
 			
-			// Different output for multiplayer game.				
-			if($this->isGameType($this->multiplayerGame))
+			// Different output for multiplayer & continueMultiplayer.				
+			if($this->isGameType($this->continueMultiplayerGame))
 			{
-				$gameHTML .= "<div id='choosePlayername'><h3>Choose your playername:</h3></div><input class='textbox' type='text' name='$this->playerName' value=''/>";
+				$gameHTML .= "<div id='opponentChose'><h3>Your opponent has chosen! Now it's your time!</h3></div>";
 			}
-			elseif($this->isGameType($this->continueMultiplayerGame))
+			
+			if($this->isGameType($this->multiplayerGame) || $this->isGameType($this->continueMultiplayerGame))
 			{
-				$gameHTML .= "<div id='opponentChose'><h3>Your opponent has chosen! Now it's your time!</h3></div>
-				<div id='choosePlayername'><h3>Choose your player name: </h3></div><input class='textbox' type='text' name='$this->playerName' value=''/>";
+				$gameHTML .= "<div id='choosePlayername'><h3>Choose your player name: </h3></div><input class='textbox' type='text' name='$this->playerName' value=''/>";
 			}
 			
 			foreach($this->handImages as $hand)
@@ -149,9 +154,9 @@ class GameView
 	// Returns the HTML for multiplayer URL.
 	public function getURLHTML($uniqueURL)
 	{
-		return "<h3>Send this URL to your opponent:</h3>
-				<h4>$uniqueURL</h4>
-				<h3>Reload the page once you know he/she made her selections!</h3>";
+		return "<div id='sendText'><h3>Send this URL to your opponent:</h3>
+				<div id='url'><h4>$uniqueURL</h4></div>
+				<h3>Reload the page once you know he/she made her selections!</h3></div>";
 	}
 	
 	// Returns the players score.
@@ -162,11 +167,15 @@ class GameView
 
 	public function getResult($outcome, HandModel $hand1, HandModel $hand2)
 	{
+		// Get each object's handtype.
 		$handType1 = $hand1->getHandType();
 		$handType2 = $hand2->getHandType();
+		
+		// Default names for the players.
 		$playername = "Player";
 		$otherPlayername = "Computer";
 		
+		// If the game is a multiplayergame, get the players chosen names.
 		if($this->gameType == $this->continueMultiplayerGame || $this->gameType == $this->multiplayerGame)
 		{
 			$playername = $hand1->getPlayerName();
@@ -195,6 +204,7 @@ class GameView
 				break;
 		}
 		
+		// Play Again-button.
 		$ret .= "</div><div id='playAgain'><h3><a href=?$this->gameType>Play again</a></h3></div>";
 		
 		return $ret;
@@ -209,17 +219,28 @@ class GameView
 	// Generates battletext depending on which hands do battle.
 	private function getBattleText($outcome, $handType1, $handType2)
 	{
+		// Stringvariables.
+		$crushes = " crushes ";
+		$covers = " covers ";
+		$cuts = " cuts ";
+		$eats = " eats ";
+		$decapitates = " decapitates ";
+		$poisons = " poisons ";
+		$smashes = " smashes ";
+		$vaporizes = " vaporizes ";
+		$disproves = " disproves ";
+		
 		// If its a draw...	
 		if($outcome == 3)
 		{
-			// ...if two spocks duel, present a special text.
+			// ...if two Spocks duel, present a special text.
 			if($handType1 == $this->spock)
 			{
 				return "Two " . ucfirst($this->spock) . "s?! How is that even possible?";
 			}
 			
 			// Return generic draw battletext as default.
-			return ucfirst($handType1) . " can't do sh*t against another " . ucfirst($handType2);
+			return $this->generateBattleTextContent($handType1, " can't do sh*t against another ", $handType2);
 		}
 		
 		// Rock outcomes.
@@ -227,15 +248,15 @@ class GameView
 		{
 			if($handType2 == $this->lizard || $handType2 == $this->scissors)
 			{
-				return ucfirst($handType1)." crushes " . ucfirst($handType2);
+				return $this->generateBattleTextContent($handType1, $crushes, $handType2);
 			}
 			if($handType2 == $this->paper)
 			{
-				return ucfirst($handType2)." covers " . ucfirst($handType1);
+				return $this->generateBattleTextContent($handType2, $covers, $handType1);
 			}
 			if($handType2 == $this->spock)
 			{
-				return ucfirst($handType2)." vaporizes " . ucfirst($handType1);
+				return $this->generateBattleTextContent($handType2, $vaporizes, $handType1);
 			}
 		}
 		
@@ -244,19 +265,19 @@ class GameView
 		{
 			if($handType2 == $this->rock)
 			{
-				return ucfirst($handType1)." covers " . ucfirst($handType2);
+				return $this->generateBattleTextContent($handType1, $covers, $handType2);
 			}
 			if($handType2 == $this->spock)
 			{
-				return ucfirst($handType1)." disproves " . ucfirst($handType2);
+				return $this->generateBattleTextContent($handType1, $disproves, $handType2);
 			}
 			if($handType2 == $this->lizard)
 			{
-				return ucfirst($handType2)." eats " . ucfirst($handType1);
+				return $this->generateBattleTextContent($handType2, $eats, $handType1);
 			}
 			if($handType2 == $this->scissors)
 			{
-				return ucfirst($handType2)." cuts " . ucfirst($handType1);
+				return $this->generateBattleTextContent($handType2, $cuts, $handType1);
 			}
 		}
 		
@@ -265,19 +286,19 @@ class GameView
 		{
 			if($handType2 == $this->paper)
 			{
-				return ucfirst($handType1)." cuts " . ucfirst($handType2);
+				return $this->generateBattleTextContent($handType1, $cuts, $handType2);
 			}
 			if($handType2 == $this->lizard)
 			{
-				return ucfirst($handType1)." decapitates " . ucfirst($handType2);
+				return $this->generateBattleTextContent($handType1, $decapitates, $handType2);
 			}
 			if($handType2 == $this->spock)
 			{
-				return ucfirst($handType2)." smashes " . ucfirst($handType1);
+				return $this->generateBattleTextContent($handType2, $smashes, $handType1);
 			}
 			if($handType2 == $this->rock)
 			{
-				return ucfirst($handType2)." crushes " . ucfirst($handType1);
+				return $this->generateBattleTextContent($handType2, $crushes, $handType1);
 			}
 		}
 		
@@ -286,19 +307,19 @@ class GameView
 		{
 			if($handType2 == $this->spock)
 			{
-				return ucfirst($handType1)." poisons " . ucfirst($handType2);
+				return $this->generateBattleTextContent($handType1, $poisons, $handType2);
 			}
 			if($handType2 == $this->paper)
 			{
-				return ucfirst($handType1)." eats " . ucfirst($handType2);
+				return $this->generateBattleTextContent($handType1, $eats, $handType2);
 			}
 			if($handType2 == $this->rock)
 			{
-				return ucfirst($handType2)." crushes " . ucfirst($handType1);
+				return $this->generateBattleTextContent($handType2, $crushes, $handType1);
 			}
 			if($handType2 == $this->scissors)
 			{
-				return ucfirst($handType2)." decapitates " . ucfirst($handType1);
+				return $this->generateBattleTextContent($handType2, $decapitates, $handType1);
 			}
 		}
 		
@@ -307,21 +328,26 @@ class GameView
 		{
 			if($handType2 == $this->scissors)
 			{
-				return ucfirst($handType1)." smashes " . ucfirst($handType2);
+				return $this->generateBattleTextContent($handType1, $smashes, $handType2);
 			}
 			if($handType2 == $this->rock)
 			{
-				return ucfirst($handType1)." vaporizes " . ucfirst($handType2);
+				return $this->generateBattleTextContent($handType1, $vaporizes, $handType2);
 			}
 			if($handType2 == $this->lizard)
 			{
-				return ucfirst($handType2)." poisons " . ucfirst($handType1);
+				return $this->generateBattleTextContent($handType2, $poisons, $handType1);
 			}
 			if($handType2 == $this->paper)
 			{
-				return ucfirst($handType2)." disproves " . ucfirst($handType1);
+				return $this->generateBattleTextContent($handType2, $disproves, $handType1);
 			}
 		}
+	}
+
+	private function generateBattleTextContent($handType1, $contentString, $handType2)
+	{
+		return ucfirst($handType1) . $contentString . ucfirst($handType2);
 	}
 
 	// Adds message to the messages-array.

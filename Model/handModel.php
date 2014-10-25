@@ -49,7 +49,7 @@ class HandModel
 		}
 		
 		// Checks if the hand created is a computerhand.
-		if($chosenHand == NULL && $isPlayer === FALSE)
+		elseif($chosenHand == NULL && $isPlayer === FALSE)
 		{
 			// The object is a computer.
 			$this->isPlayer = FALSE;
@@ -168,7 +168,7 @@ class HandModel
 		{
 			if($chosenHand == NULL || $chosenHand == '')
 			{
-				throw new Exception("An error occured while creating a new hand object.");
+				throw new Exception("Chosen hand is null or empty!");
 			}
 			
 			switch($chosenHand)
@@ -244,8 +244,6 @@ class HandModel
 	{
 		try
 		{
-			$computerHand = "";
-			
 			// Creates an array of the different handtypes.
 			$handTypes = array($this->rock, $this->paper, $this->scissors, $this->lizard, $this->spock);
 			$randomType = array_rand($handTypes);
@@ -284,7 +282,7 @@ class HandModel
 				return 1;
 			}
 			// If the secondHand's type is this objects weakness...
-			else if(in_array($otherHand->getHandType(), $this->getWeaknesses()))
+			elseif(in_array($otherHand->getHandType(), $this->getWeaknesses()))
 			{
 				// Check if object is a player.
 				if($this->isPlayer === TRUE)

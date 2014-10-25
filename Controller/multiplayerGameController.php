@@ -39,50 +39,58 @@ class MultiplayerGameController
 		// Check if the user has a game currently unresolved.
 		if($this->dataHandler->sessionExists())
 		{
-			// Gets the playername from the session.
-			$playername = $this->dataHandler->getSessionPlayername();
-			
-			// Gets the status of the existing game from the gamefile.
-			$statusFromFile = $this->dataHandler->handleData($playername, $getHandType = FALSE, $getPlayernameAndStatus = TRUE);
-			
-			// Shows the Unresolved-page.
-			if($statusFromFile == $this->unresolved)
+			try
 			{
-				return $this->gameView->showUnresolved();
+				// Gets the playername from the session.
+				$playername = $this->dataHandler->getSessionPlayername();
+				
+				// Gets the status of the existing game from the gamefile.
+				$statusFromFile = $this->dataHandler->handleData($playername, $getHandType = FALSE, $getPlayernameAndStatus = TRUE);
+				
+				// Shows the Unresolved-page.
+				if($statusFromFile == $this->unresolved)
+				{
+					return $this->gameView->showUnresolved();
+				}
+				
+				// Shows the resolved-page.
+				if($statusFromFile == $this->resolved)
+				{
+					// Gets an array from the file, containing the first & second players hands & second players name.
+					$components = $this->dataHandler->manageComponentsFromFile($playername);
+					
+					// Creates new objects from the components.
+					$playerOneHand = new HandModel($components[0]);
+					$playerTwoHand = new HandModel($components[1]);
+					
+					// Sets the playername for the new objects.
+					$playerOneHand->setPlayerName($playername);
+					$playerTwoHand->setPlayerName($components[2]);
+					
+					// Compares the hands and saves the outcome.
+					// Will be 1 if player won, 2 if player lost or 3 if its a draw.
+					$outcome = $playerOneHand->compareHands($playerTwoHand);
+					
+					// Get the result HTML.
+					$resultHTML = $this->gameView->getResult($outcome, $playerOneHand, $playerTwoHand);
+					
+					// Adds the players current score to the resultHTML.
+					$resultHTML .= $this->gameView->getPlayerScore($playerOneHand);
+					
+					// Removes the playername-session.
+					$this->dataHandler->removeSessionPlayername();
+					
+					// Removes the challenge from the textfile.
+					$this->dataHandler->manageComponentsFromFile($playername, $components[0], $components[1], $components[2]);
+					
+					// Show the resultpage.
+					return $this->gameView->showGame($resultHTML);
+				}
 			}
-			
-			// Shows the resolved-page.
-			if($statusFromFile == $this->resolved)
+			catch(Exception $e)
 			{
-				// Gets an array from the file, containing the first & second players hands & second players name.
-				$components = $this->dataHandler->manageComponentsFromFile($playername);
-				
-				// Creates new objects from the components.
-				$playerOneHand = new HandModel($components[0]);
-				$playerTwoHand = new HandModel($components[1]);
-				
-				// Sets the playername for the new objects.
-				$playerOneHand->setPlayerName($playername);
-				$playerTwoHand->setPlayerName($components[2]);
-				
-				// Compares the hands and saves the outcome.
-				// Will be 1 if player won, 2 if player lost or 3 if its a draw.
-				$outcome = $playerOneHand->compareHands($playerTwoHand);
-				
-				// Get the result HTML.
-				$resultHTML = $this->gameView->getResult($outcome, $playerOneHand, $playerTwoHand);
-				
-				// Adds the players current score to the resultHTML.
-				$resultHTML .= $this->gameView->getPlayerScore($playerOneHand);
-				
-				// Removes the playername-session.
-				$this->dataHandler->removeSessionPlayername();
-				
-				// Removes the challenge from the textfile.
-				$this->dataHandler->manageComponentsFromFile($playername, $components[0], $components[1], $components[2]);
-				
-				// Show the resultpage.
-				return $this->gameView->showGame($resultHTML);
+				$this->gameView->addMessage($e->getMessage());
+				return $this->gameView->showGame();
 			}
 		}
 			
@@ -98,8 +106,8 @@ class MultiplayerGameController
 				// Get the players selected username.
 				$playerOneName = $this->gameView->getPlayername();
 				
-				// Validate player name.
-				$this->dataHandler->validatePlayerInput($playerOneName);
+				// Sets the session variables.
+				$this->dataHandler->setSessionPlayername($playerOneName);
 				
 				// Generate a new URL for the player to send to his/her opponent.
 				$uniqueURL = $this->dataHandler->generateUniqueURL($playerOneName);

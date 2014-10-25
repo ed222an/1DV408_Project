@@ -4,12 +4,12 @@ require_once("./model/handTypes.php");
 
 class DataHandler
 {
-	private $textFileName = "dataList.txt";
 	private $actualURL;
-	private $handTypes = array();
 	private $gameType;
+	private $handTypes = array();
 	
 	// String dependencies
+	private $textFileName = "dataList.txt";
 	private $continueMultiplayerGame = "continueMultiplayerGame";
 	private $unresolved = "unresolved";
 	private $resolved = "resolved";
@@ -17,12 +17,18 @@ class DataHandler
 	
 	public function __construct($actualURL, $gameType)
 	{
-		$this->validateParam($actualURL);
-		$this->validateParam($gameType);
+		// Get handtypes from the HandTypes-model.
+		$handTypes = array(HandTypes::rock, HandTypes::paper, HandTypes::scissors, HandTypes::lizard, HandTypes::spock);
 		
+		// Validate the variables.
+		$this->validateParam($actualURL);
+		$this->validateParam($gameType);		
+		$this->validateHandTypes($handTypes);
+		
+		// Set objekt variables.
 		$this->actualURL = $actualURL;
 		$this->gameType = $gameType;
-		$this->handTypes = array(HandTypes::rock, HandTypes::paper, HandTypes::scissors, HandTypes::lizard, HandTypes::spock);
+		$this->handTypes = $handTypes;
 	}
 	
 	// Validation of parameter.
@@ -34,12 +40,28 @@ class DataHandler
 		}
 	}
 	
+	//
+	private function validateHandTypes($handTypes)
+	{
+		foreach ($handTypes as $handType)
+		{
+			if(!isset($handType))
+			{
+				throw new Exception("Invalid handtype!");
+			}
+		}
+	}
+	
 	// Validates the player's input.
 	public function validatePlayerInput($playername)
 	{
 		if(!preg_match('/^[A-Za-z][A-Za-z0-9]{2,31}$/', $playername))
 		{
 			throw new Exception("Chosen name is not valid. Must contain at least 3 characters, starting with a letter. Only use letters and numbers!");
+		}
+		else
+		{
+			return TRUE;
 		}
 	}
 	
@@ -52,7 +74,10 @@ class DataHandler
 	// Sets the playername in the session.
 	public function setSessionPlayername($playername)
 	{
-		$_SESSION[$this->playernameSession] = $playername;
+		if($this->validatePlayerInput($playername))
+		{
+			$_SESSION[$this->playernameSession] = $playername;
+		}
 	}
 	
 	public function getSessionPlayername()
@@ -77,101 +102,138 @@ class DataHandler
 	// Generates a unique url.
 	public function generateUniqueURL($playername)
 	{
-		$modifiedURL = $this->actualURL . "=";
+		if($this->validatePlayerInput($playername))
+		{
+			$modifiedURL = $this->actualURL . "=";
 		
-		$uniqueURL = str_replace($this->gameType, $this->continueMultiplayerGame, $modifiedURL);
+			$uniqueURL = str_replace($this->gameType, $this->continueMultiplayerGame, $modifiedURL);
+			
+			$uniqueURL .= $playername . "/" . md5(uniqid(rand(), true));
 		
-		$uniqueURL .= $playername . "/" . md5(uniqid(rand(), true));
-		
-		return $uniqueURL;
+			return $uniqueURL;
+		}
 	}
 	
 	// Adds unresolved to the url.
 	public function addUnresolvedToURL($uniqueURL)
 	{
-		$uniqueURL .= "=" . $this->unresolved;
+		if(isset($uniqueURL))
+		{
+			$uniqueURL .= "=" . $this->unresolved;
 		
-		return $uniqueURL;
+			return $uniqueURL;
+		}
+		else
+		{
+			throw new Exception("Could not add unresolved-status to URL.");
+		}
 	}
 	
 	// Adds resolved to the url.
 	private function addResolvedToURL($uniqueURL)
 	{
-		if(strpos($uniqueURL, $this->unresolved) !== FALSE)
+		if(isset($uniqueURL))
 		{
-			$uniqueURL = str_replace($this->unresolved, $this->resolved, $uniqueURL);
+			if(strpos($uniqueURL, $this->unresolved) !== FALSE)
+			{
+				$uniqueURL = str_replace($this->unresolved, $this->resolved, $uniqueURL);
+			}
+			else
+			{
+				$uniqueURL .= $this->resolved;
+			}
+			
+			return $uniqueURL;
 		}
 		else
 		{
-			$uniqueURL .= $this->resolved;
+			throw new Exception("Could not add resolved-status to URL.");
 		}
-		
-		return $uniqueURL;
 	}
 	
 	// Appends a string to the existing data.
 	public function appendToData($data, $stringToAppend)
 	{
-		return $data . ";" . $stringToAppend;
+		if(isset($data) && isset($stringToAppend))
+		{
+			return $data . ";" . $stringToAppend;
+		}
+		else
+		{
+			throw new Exception("Could not append string to data.");
+		}
 	}
 	
 	// Returns true if the url exists in the file.
 	public function handleData($dataToCheck, $getHandType = FALSE, $getPlayernameAndStatus = FALSE, $getRowData = FALSE)
 	{
-		// Controls if the file exists.
-		if($this->checkForFile($this->textFileName))
+		if(!isset($dataToCheck))
 		{
-			// Explodes the file contents at each rowbreak.
-			$file = file_get_contents($this->textFileName);		
-			$result = explode(PHP_EOL, $file);
-			
-			foreach($result as $data)
+			throw new Exception("No data to work with!");
+		}
+		
+		try
+		{			
+			// Controls if the file exists.
+			if($this->checkForFile($this->textFileName))
 			{
-				// Is search for playername and status.
-				if($getPlayernameAndStatus === TRUE)
+				// Explodes the file contents at each rowbreak.
+				$file = file_get_contents($this->textFileName);		
+				$result = explode(PHP_EOL, $file);
+				
+				foreach($result as $data)
 				{
-					// Searches file for playername.
-					if(strpos($data, $dataToCheck) !== false)
+					// Is search for playername and status.
+					if($getPlayernameAndStatus === TRUE)
 					{
-						// Searches for the status.					    
-						if(strpos($data, $this->unresolved))
+						// Searches file for playername.
+						if(strpos($data, $dataToCheck) !== false)
 						{
-							return $this->unresolved;
-						}
-						
-						if(strpos($data, $this->resolved))
-						{
-							return $this->resolved;
+							// Searches for the unresolved-status.					    
+							if(strpos($data, $this->unresolved))
+							{
+								return $this->unresolved;
+							}
+							
+							// Searches for the resolved-status.
+							if(strpos($data, $this->resolved))
+							{
+								return $this->resolved;
+							}
 						}
 					}
-				}
-				else
-				{
-					// Separate URL from handtype.
-					$urlAndHandType = explode(";", $data);
-					
-					// Checks for correct URL.
-					if($urlAndHandType[0] == $dataToCheck)
+					else
 					{
-						// Gets all the data in the row.
-						if($getRowData === TRUE)
-						{
-							return $data;
-						}
-												
-						// Gets the handtype.
-						if($getHandType === TRUE)
-						{	
-							return $urlAndHandType[1];
-						}
+						// Separate URL from handtype.
+						$urlAndHandType = explode(";", $data);
 						
-						return TRUE;
+						// Checks for correct URL.
+						if($urlAndHandType[0] == $dataToCheck)
+						{
+							// Gets all the data in the row.
+							if($getRowData === TRUE)
+							{
+								return $data;
+							}
+													
+							// Gets the handtype.
+							if($getHandType === TRUE)
+							{	
+								return $urlAndHandType[1];
+							}
+							
+							return TRUE;
+						}
 					}
 				}
 			}
+			
+			return FALSE;
 		}
-		
-		return FALSE;
+		catch(Exception $e)
+		{
+			throw new Exception("Something went wrong while trying to handle the data.");
+		}
 	}
 	
 	// Search for a file with given name.
@@ -188,84 +250,114 @@ class DataHandler
 	// Saves the new url to a file.
 	public function saveDataToFile($data, $playerHandType = NULL, $playername = NULL)
 	{
-		$stringToSave = $data . PHP_EOL;
-
-		// If the file doesn't exists, create it and fill it with the new contents.
-		if($this->checkForFile($this->textFileName) === FALSE)
+		if(!isset($data))
 		{
-			$this->createNewFile($stringToSave, $this->textFileName);
+			throw new Exception("No data to save!");
 		}
-		else
-		{	
-			// Get file contents.
-			$current = file_get_contents($this->textFileName);	
-			
-			if(strpos($current, $data) !== false)
+		
+		try
+		{
+			$stringToSave = $data . PHP_EOL;
+	
+			// If the file doesn't exists, create it and fill it with the new contents.
+			if($this->checkForFile($this->textFileName) === FALSE)
 			{
-				// Replaces the old string with an updated one.
-				if(isset($playerHandType) && isset($playername))
-				{
-					$stringToSave = $data . ";" . $playerHandType . ";" . $playername;
-				}
-				
-				$stringToSave = $this->addResolvedToURL($stringToSave);
-				$current = str_replace($data, $stringToSave, $current);
+				$this->createNewFile($stringToSave, $this->textFileName);
 			}
 			else
-			{
-				// Append new contents to file.
-				$current .= $stringToSave;
+			{	
+				// Get file contents.
+				$current = file_get_contents($this->textFileName);	
+				
+				if(strpos($current, $data) !== false)
+				{
+					// Replaces the old string with an updated one.
+					if(isset($playerHandType) && $this->validatePlayerInput($playername))
+					{
+						$stringToSave = $data . ";" . $playerHandType . ";" . $playername;
+					}
+					
+					$stringToSave = $this->addResolvedToURL($stringToSave);
+					$current = str_replace($data, $stringToSave, $current);
+				}
+				else
+				{
+					// Append new contents to file.
+					$current .= $stringToSave;
+				}
+				
+				// Update file.
+				file_put_contents($this->textFileName, $current);
 			}
-			
-			// Update file.
-			file_put_contents($this->textFileName, $current);
+		}
+		catch(Exception $e)
+		{
+			throw new Exception("An error occurred while trying to save the data!");
 		}
 	}
 	
 	// Create a new file with parameters as contents & name.
 	private function createNewFile($newContent, $fileName)
 	{
-		// Skapar och öppnar en fil.
-		$file = fopen($fileName, "w") or die("Unable to open file!");
-		
-		fwrite($file, $newContent);
-		
-		// Stänger filen.
-		fclose($file);
+		if(isset($newContent) && isset($fileName))
+		{
+			// Skapar och öppnar en fil.
+			$file = fopen($fileName, "w") or die("Unable to open file!");
+			
+			fwrite($file, $newContent);
+			
+			// Stänger filen.
+			fclose($file);
+		}
+		else
+		{
+			throw new Exception("Unable to create new file!");
+		}
 	}
 	
 	public function manageComponentsFromFile($playername, $playerHandType = NULL, $secondPlayername = NULL, $secondPlayerHandType = NULL)
 	{
-		// Controls if the file exists.
-		if($this->checkForFile($this->textFileName))
+		try
 		{
-			// Explodes the file contents at each rowbreak.
-			$file = file_get_contents($this->textFileName);		
-			$result = explode(PHP_EOL, $file);
+			// Validate playername.
+			$this->validatePlayerInput($playername);
 			
-			foreach($result as $data)
+			// Controls if the file exists.
+			if($this->checkForFile($this->textFileName))
 			{
-				if(strpos($data, $playername) !== false)
+				// Explodes the file contents at each rowbreak.
+				$file = file_get_contents($this->textFileName);		
+				$result = explode(PHP_EOL, $file);
+				
+				foreach($result as $data)
 				{
-					// If second player is set, remove the url from file.
-					if(isset($playerHandType) && isset($secondPlayername) && isset($secondPlayerHandType))
+					if(strpos($data, $playername) !== false)
 					{
-						if(strpos($data, $playerHandType) !== false && strpos($data, $secondPlayername) !== false && strpos($data, $secondPlayerHandType) !== false)
+						// If second player is set, remove the url from file.
+						if(isset($playerHandType) && $this->validatePlayerInput($secondPlayername) && isset($secondPlayerHandType))
 						{
-							$file = str_replace($data, "", $file);
-							$file = str_replace(PHP_EOL, "", $file);
-							file_put_contents($this->textFileName, $file);
+							if(strpos($data, $playerHandType) !== false && strpos($data, $secondPlayername) !== false && strpos($data, $secondPlayerHandType) !== false)
+							{
+								$file = str_replace($data, "", $file);
+								$file = str_replace(PHP_EOL, "", $file);
+								$file .= PHP_EOL;
+								file_put_contents($this->textFileName, $file);
+							}
 						}
-					}
-					else
-					{
-						// Separate the necessary components.
-						$dataFromFile = explode(";", $data);
-	
-						return array($dataFromFile[1], $dataFromFile[2], $dataFromFile[3]);
+						else
+						{
+							// Separate the necessary components.
+							$dataFromFile = explode(";", $data);
+		
+							return array($dataFromFile[1], $dataFromFile[2], $dataFromFile[3]);
+						}
 					}
 				}
 			}
+		}
+		catch(Exception $e)
+		{
+			throw new Exception("Could not manage components from file.");
 		}
 	}
 }

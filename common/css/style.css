@@ -35,9 +35,9 @@ input:focus
 	background-color: yellow;
 }
 
-a:link
+a
 {
-	color: purple;
+	color: #33CCFF;
 }
  
 a:hover
@@ -139,4 +139,21 @@ form
 {
 	text-align:center;
 	margin-right:7%;
+}
+
+#sendText
+{
+	margin-left:-100%;
+	margin-right:-98%;
+	padding-left:-100px;
+	text-align:center;
+	border: 20px solid lightblue;
+    box-shadow: 10px 10px 10px black;
+    background-color:#855C33;
+    color:black;
+}
+
+#url
+{
+	color:#CCCCFF;
 }
